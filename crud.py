@@ -1,5 +1,5 @@
-from app.database import get_connection
-from app.schemas import EmbalagemAuxiliar
+from database import get_connection
+from schemas import EmbalagemAuxiliar
 
 def dictfetchone(cur):
     row = cur.fetchone()

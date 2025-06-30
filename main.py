@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
-from app.schemas import Produto, DadoLogistico, LastroCamada, EmbalagemAuxiliar
+from schemas import Produto, DadoLogistico, LastroCamada, EmbalagemAuxiliar
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
-import app.crud as crud
+import crud as crud
 
 
 app = FastAPI()

@@ -28,7 +28,7 @@ def criar(prod: Produto):
 def verificar(ean_master: str):
     produto = crud.buscar_produto(ean_master)
     if produto:
-        from app.database import get_connection
+        from database import get_connection
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("SELECT COUNT(*) FROM dados_logisticos WHERE produto_id = %s", (produto["id"],))

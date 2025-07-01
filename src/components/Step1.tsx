@@ -31,7 +31,7 @@ const Step1 = ({ produto, setProduto, nextStep }: any) => {
   }, [cameraAtiva]);
 
   const handleBuscar = async () => {
-    const res = await fetch(`https://cadastro-logistico.onrender.com/verifica-produto/${produto.ean_master}`);
+    const res = await fetch(`https://cadastro-logistico.onrender.com/verifica-produto-completo/${produto.ean_master}`);
     const data = await res.json();
 
     if (!data.existe) {

@@ -1,4 +1,5 @@
 import React from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 const Step3 = ({ produto, dados, setDados, nextStep }: any) => {
   const [form, setForm] = React.useState({
@@ -18,6 +19,7 @@ const Step3 = ({ produto, dados, setDados, nextStep }: any) => {
   });
 
   const [unidades, setUnidades] = React.useState<string[]>([]);
+  const [cameraAtiva, setCameraAtiva] = React.useState(false);
 
   React.useEffect(() => {
     fetch("https://cadastro-logistico.onrender.com/unidades")
@@ -25,6 +27,31 @@ const Step3 = ({ produto, dados, setDados, nextStep }: any) => {
       .then(data => setUnidades(data.map((u: any) => u.unidade)))
       .catch(err => console.error("Erro ao carregar unidades", err));
   }, []);
+
+  React.useEffect(() => {
+    if (cameraAtiva) {
+      const scanner = new Html5QrcodeScanner(
+        "reader-step3",
+        { fps: 10, qrbox: { width: 250, height: 100 } },
+        false
+      );
+
+      scanner.render(
+        (codigo) => {
+          setForm((prev) => ({ ...prev, ean: codigo }));
+          setCameraAtiva(false);
+          scanner.clear();
+        },
+        (error) => {
+          // Erros ignorados
+        }
+      );
+
+      return () => {
+        scanner.clear().catch(() => {});
+      };
+    }
+  }, [cameraAtiva]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -51,21 +78,43 @@ const Step3 = ({ produto, dados, setDados, nextStep }: any) => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Menor Embalagem</h2>
-      <input className="w-full border p-2" name="ean" placeholder="EAN" onChange={handleChange} />
+
+      <div className="flex gap-2">
+        <input
+          className="w-full border p-2"
+          name="ean"
+          placeholder="EAN"
+          value={form.ean}
+          onChange={handleChange}
+        />
+        <button
+          className="bg-gray-300 px-4 py-2 rounded"
+          onClick={() => setCameraAtiva(!cameraAtiva)}
+        >
+          {cameraAtiva ? "Fechar Câmera" : "Ler Código"}
+        </button>
+      </div>
+
+      {cameraAtiva && <div id="reader-step3" className="my-4" />}
+
       <input className="w-full border p-2" value={form.descricao} disabled />
+
       <input className="w-full border p-2" name="embalagem" placeholder="Embalagem" onChange={handleChange} />
+
       <select className="w-full border p-2" name="unidade_compra" value={form.unidade_compra} onChange={handleChange}>
         <option value="">Selecione a unidade</option>
         {unidades.map((unidade) => (
           <option key={unidade} value={unidade}>{unidade}</option>
         ))}
       </select>
+
       <input className="w-full border p-2" name="qtd_embalagem" placeholder="Quantidade Embalagem" onChange={handleChange} />
       <input className="w-full border p-2" name="altura_cm" placeholder="Altura (cm)" onChange={handleChange} />
       <input className="w-full border p-2" name="largura_cm" placeholder="Largura (cm)" onChange={handleChange} />
       <input className="w-full border p-2" name="comprimento_cm" placeholder="Comprimento (cm)" onChange={handleChange} />
       <input className="w-full border p-2" name="peso_liquido" placeholder="Peso Líquido (Kg)" onChange={handleChange} />
       <input className="w-full border p-2" name="peso_bruto" placeholder="Peso Bruto (Kg)" onChange={handleChange} />
+
       <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleNext}>Avançar</button>
     </div>
   );

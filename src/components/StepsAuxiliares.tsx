@@ -1,4 +1,5 @@
 import React from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: string) => {
   return ({ produto, dados, setDados, nextStep }: any) => {
@@ -14,6 +15,7 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
     });
 
     const [unidades, setUnidades] = React.useState<string[]>([]);
+    const [cameraAtiva, setCameraAtiva] = React.useState(false);
 
     React.useEffect(() => {
       fetch("https://cadastro-logistico.onrender.com/unidades")
@@ -21,6 +23,31 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
         .then(data => setUnidades(data.map((u: any) => u.unidade)))
         .catch(err => console.error("Erro ao carregar unidades", err));
     }, []);
+
+    React.useEffect(() => {
+      if (cameraAtiva) {
+        const scanner = new Html5QrcodeScanner(
+          `reader-step${step}`,
+          { fps: 10, qrbox: { width: 250, height: 100 } },
+          false
+        );
+
+        scanner.render(
+          (codigo) => {
+            setForm((prev) => ({ ...prev, ean: codigo }));
+            setCameraAtiva(false);
+            scanner.clear();
+          },
+          (error) => {
+            // erros ignorados
+          }
+        );
+
+        return () => {
+          scanner.clear().catch(() => {});
+        };
+      }
+    }, [cameraAtiva]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -34,12 +61,13 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
           ...form,
           qtd_embalagem: parseInt(form.qtd_embalagem) || 0
         };
-        setDados(prev => [...prev, formNormalizado]);
+        setDados((prev: any) => [...prev, formNormalizado]);
       }
+
       if (!form.produto_id) {
-          alert("Produto ainda não foi carregado corretamente.");
-          return;
-        }
+        alert("Produto ainda não foi carregado corretamente.");
+        return;
+      }
 
       nextStep();
     };
@@ -47,14 +75,44 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">{titulo}</h2>
-        <input className="w-full border p-2" name="ean" placeholder="EAN Auxiliar" onChange={handleChange} />
-        <input className="w-full border p-2" name="embalagem" placeholder="Embalagem (Ex: DP 12UN)" onChange={handleChange} />
-        <select className="w-full border p-2" name="unidade_compra" value={form.unidade_compra} onChange={handleChange}>
+
+        <div className="flex gap-2">
+          <input
+            className="w-full border p-2"
+            name="ean"
+            placeholder="EAN Auxiliar"
+            value={form.ean}
+            onChange={handleChange}
+          />
+          <button
+            className="bg-gray-300 px-4 py-2 rounded"
+            onClick={() => setCameraAtiva(!cameraAtiva)}
+          >
+            {cameraAtiva ? "Fechar Câmera" : "Ler Código"}
+          </button>
+        </div>
+
+        {cameraAtiva && <div id={`reader-step${step}`} className="my-4" />}
+
+        <input
+          className="w-full border p-2"
+          name="embalagem"
+          placeholder="Embalagem (Ex: DP 12UN)"
+          onChange={handleChange}
+        />
+
+        <select
+          className="w-full border p-2"
+          name="unidade_compra"
+          value={form.unidade_compra}
+          onChange={handleChange}
+        >
           <option value="">Selecione a unidade</option>
           {unidades.map((unidade) => (
             <option key={unidade} value={unidade}>{unidade}</option>
           ))}
         </select>
+
         <input
           type="number"
           className="w-full border p-2"
@@ -63,7 +121,13 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
           value={form.qtd_embalagem}
           onChange={handleChange}
         />
-        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleNext}>Avançar</button>
+
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={handleNext}
+        >
+          Avançar
+        </button>
       </div>
     );
   };

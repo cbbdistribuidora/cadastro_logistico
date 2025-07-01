@@ -15,6 +15,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/produto/{ean_master}")
+def get_produto(ean_master: str):
+    produto = crud.buscar_produto(ean_master)
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    return produto
+    
 @app.post("/produto")
 def criar(prod: Produto):
     if not crud.criar_produto(prod.ean_master, prod.descricao):
@@ -24,20 +32,10 @@ def criar(prod: Produto):
     return {"mensagem": "Produto cadastrado com sucesso", "id": produto["id"]}
 
 
-@app.get("/verifica-produto/{ean_master}")
-def verificar(ean_master: str):
-    produto = crud.buscar_produto(ean_master)
-    if produto:
-        from database import get_connection
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM dados_logisticos WHERE produto_id = %s", (produto["id"],))
-        count = cur.fetchone()[0]
-        return {
-            "cadastrado": count > 0,
-            "descricao": produto['descricao']
-        }
-    return {"cadastrado": False}
+@app.get("/verifica-produto-completo/{ean_master}")
+def verificar_produto_completo(ean_master: str):
+    resultado = crud.buscar_produto_completo(ean_master)
+    return resultado
 
 @app.post("/dados-logisticos")
 def salvar_dados(dados: List[DadoLogistico]):

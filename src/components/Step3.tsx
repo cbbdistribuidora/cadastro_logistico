@@ -1,7 +1,7 @@
 import React from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: string) => {
+const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: string) => {
   return ({ produto, dados, setDados, nextStep, produtoReferenciaId }: any) => {
     const [form, setForm] = React.useState({
       produto_id: produto.id,
@@ -30,7 +30,6 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
       fetch(`https://cadastro-logistico.onrender.com/embalagem-auxiliar/${produtoReferenciaId}/${tipo_embalagem}`)
         .then(res => res.json())
         .then(data => {
-          
           if (!data || typeof data !== "object") return;
           setForm(prev => ({
             ...prev,
@@ -45,28 +44,27 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
     }, [produtoReferenciaId, tipo_embalagem]);
 
     React.useEffect(() => {
-          if (cameraAtiva) {
-            const scanner = new Html5QrcodeScanner(
-              `reader-step${step}`,
-              { fps: 10, qrbox: { width: 250, height: 100 } },
-              false
-            );
-    
-            scanner.render(
-              (codigo) => {
-                setForm((prev) => ({ ...prev, ean: codigo }));
-                setCameraAtiva(false);
-                scanner.clear();
-              },
-              (error) => {
-              }
-            );
-    
-            return () => {
-              scanner.clear().catch(() => {});
-            };
-          }
-        }, [cameraAtiva]);
+      if (cameraAtiva) {
+        const scanner = new Html5QrcodeScanner(
+          `reader-step${step}`,
+          { fps: 10, qrbox: { width: 250, height: 100 } },
+          false
+        );
+
+        scanner.render(
+          (codigo) => {
+            setForm((prev) => ({ ...prev, ean: codigo }));
+            setCameraAtiva(false);
+            scanner.clear();
+          },
+          (error) => {}
+        );
+
+        return () => {
+          scanner.clear().catch(() => {});
+        };
+      }
+    }, [cameraAtiva]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -115,13 +113,6 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
 
         <input
           className="w-full border p-2"
-          name="ean"
-          placeholder="EAN Auxiliar"
-          value={form.ean}
-          onChange={handleChange}
-        />
-        <input
-          className="w-full border p-2"
           name="embalagem"
           placeholder="Embalagem (Ex: DP 12UN)"
           value={form.embalagem}
@@ -153,6 +144,8 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
     );
   };
 };
+
+export default criarStepAuxiliar;
 
 export const Step4 = criarStepAuxiliar(4, "auxiliar_1", "Embalagem Auxiliar 1");
 export const Step5 = criarStepAuxiliar(5, "auxiliar_2", "Embalagem Auxiliar 2");

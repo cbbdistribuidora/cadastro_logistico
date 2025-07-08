@@ -31,7 +31,7 @@ const Step3 = ({ produto, dados, setDados, nextStep, produtoReferenciaId }: any)
   useEffect(() => {
     if (!produtoReferenciaId) return;
 
-    fetch(`https://cadastro-logistico.onrender.com/${produtoReferenciaId}`)
+    fetch(`https://cadastro-logistico.onrender.com/dados-logisticos-vendavel/${produtoReferenciaId}`)
       .then(res => res.json())
       .then(data => {
         const ref = data.find((item: any) => item.tipo_embalagem === "vendavel");

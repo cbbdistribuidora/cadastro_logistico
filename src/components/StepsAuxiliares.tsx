@@ -2,7 +2,7 @@ import React from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: string) => {
-  return ({ produto, dados, setDados, nextStep }: any) => {
+  return ({ produto, dados, setDados, nextStep, produtoReferenciaId }: any) => {
     const [form, setForm] = React.useState({
       produto_id: produto.id,
       step,
@@ -25,29 +25,48 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
     }, []);
 
     React.useEffect(() => {
-      if (cameraAtiva) {
-        const scanner = new Html5QrcodeScanner(
-          `reader-step${step}`,
-          { fps: 10, qrbox: { width: 250, height: 100 } },
-          false
-        );
+      if (!produtoReferenciaId || !tipo_embalagem) return;
 
-        scanner.render(
-          (codigo) => {
-            setForm((prev) => ({ ...prev, ean: codigo }));
-            setCameraAtiva(false);
-            scanner.clear();
-          },
-          (error) => {
-            // erros ignorados
+      fetch(`https://cadastro-logistico.onrender.com/embalagem-auxiliar/${produtoReferenciaId}/${tipo_embalagem}`)
+        .then(res => res.json())
+        .then(data => {
+          
+          if (!data || typeof data !== "object") return;
+          setForm(prev => ({
+            ...prev,
+            embalagem: data.embalagem || "",
+            unidade_compra: data.unidade_compra || "",
+            qtd_embalagem: data.qtd_embalagem?.toString() || ""
+          }));
+        })
+        .catch(err => {
+          console.error("Erro ao buscar embalagem auxiliar", err);
+        });
+    }, [produtoReferenciaId, tipo_embalagem]);
+
+    React.useEffect(() => {
+          if (cameraAtiva) {
+            const scanner = new Html5QrcodeScanner(
+              `reader-step${step}`,
+              { fps: 10, qrbox: { width: 250, height: 100 } },
+              false
+            );
+    
+            scanner.render(
+              (codigo) => {
+                setForm((prev) => ({ ...prev, ean: codigo }));
+                setCameraAtiva(false);
+                scanner.clear();
+              },
+              (error) => {
+              }
+            );
+    
+            return () => {
+              scanner.clear().catch(() => {});
+            };
           }
-        );
-
-        return () => {
-          scanner.clear().catch(() => {});
-        };
-      }
-    }, [cameraAtiva]);
+        }, [cameraAtiva]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -85,7 +104,7 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
             onChange={handleChange}
           />
           <button
-            className="bg-gray-300 px-4 py-2 rounded"
+            className="bg-gray-600 text-white px-4 py-2 rounded"
             onClick={() => setCameraAtiva(!cameraAtiva)}
           >
             {cameraAtiva ? "Fechar Câmera" : "Ler Código"}
@@ -96,11 +115,18 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
 
         <input
           className="w-full border p-2"
-          name="embalagem"
-          placeholder="Embalagem (Ex: DP 12UN)"
+          name="ean"
+          placeholder="EAN Auxiliar"
+          value={form.ean}
           onChange={handleChange}
         />
-
+        <input
+          className="w-full border p-2"
+          name="embalagem"
+          placeholder="Embalagem (Ex: DP 12UN)"
+          value={form.embalagem}
+          onChange={handleChange}
+        />
         <select
           className="w-full border p-2"
           name="unidade_compra"
@@ -112,7 +138,6 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
             <option key={unidade} value={unidade}>{unidade}</option>
           ))}
         </select>
-
         <input
           type="number"
           className="w-full border p-2"
@@ -121,11 +146,7 @@ export const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: 
           value={form.qtd_embalagem}
           onChange={handleChange}
         />
-
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={handleNext}
-        >
+        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleNext}>
           Avançar
         </button>
       </div>

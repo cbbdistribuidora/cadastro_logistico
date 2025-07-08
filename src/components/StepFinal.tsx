@@ -1,8 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const StepFinal = ({ produto, dados, embalagensAuxiliares, reset }: any) => {
+const StepFinal = ({ produto, dados, embalagensAuxiliares, reset, produtoReferenciaId }: any) => {
   const [lastro, setLastro] = useState("");
   const [camada, setCamada] = useState("");
+
+  useEffect(() => {
+    if (!produtoReferenciaId) return;
+
+    fetch(`https://cadastro-logistico.onrender.com/lastro-camada/${produtoReferenciaId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setLastro(data.lastro?.toString() || "");
+          setCamada(data.camada?.toString() || "");
+        }
+      })
+      .catch(err => console.error("Erro ao carregar dados de lastro/camada da referência", err));
+  }, [produtoReferenciaId]);
 
   const handleSubmit = async () => {
     try {

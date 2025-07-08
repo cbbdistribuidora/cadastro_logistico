@@ -31,19 +31,20 @@ const Step1 = ({ produto, setProduto, nextStep }: any) => {
   }, [cameraAtiva]);
 
   const handleBuscar = async () => {
-    const res = await fetch(`https://cadastro-logistico.onrender.com/verifica-produto-completo/${produto.ean_master}`);
-    const data = await res.json();
+  const res = await fetch(`https://cadastro-logistico.onrender.com/verifica-produto-completo/${produto.ean_master}`);
+  const data = await res.json();
 
-    if (!data.existe) {
-      setModoCadastro(true);
-      setMensagem("Produto não encontrado. Informe os dados para cadastrar.");
-    } else if (data.cadastrado) {
-      setMensagem("Produto já possui dados logísticos.");
-    } else {
-      setProduto({ ...produto, id: data.id, descricao: data.descricao });
-      nextStep();
-    }
-  };
+  if (!data.existe) {
+    setModoCadastro(true);
+    setMensagem("Produto não encontrado. Informe os dados para cadastrar.");
+  } else if (data.existe && data.cadastrado) {
+    setMensagem("Produto já possui dados logísticos.");
+  } else if (data.existe && !data.cadastrado) {
+    setProduto({ ...produto, id: data.id, descricao: data.descricao });
+    nextStep();
+  }
+};
+
 
   const handleCadastrarProduto = async () => {
     const res = await fetch("https://cadastro-logistico.onrender.com/produto", {

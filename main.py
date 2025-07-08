@@ -15,14 +15,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/produto/{ean_master}")
 def get_produto(ean_master: str):
     produto = crud.buscar_produto(ean_master)
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     return produto
-    
+
 @app.post("/produto")
 def criar(prod: Produto):
     if not crud.criar_produto(prod.ean_master, prod.descricao):
@@ -56,3 +55,19 @@ def listar_unidades():
 def post_embalagens_auxiliares(lista: list[EmbalagemAuxiliar]):
     crud.salvar_embalagens_auxiliares(lista)
     return {"status": "ok"}
+
+@app.get("/dados-logisticos-por-ean/{ean}")
+def buscar_dados_logisticos_por_ean(ean: str):
+    return crud.buscar_dados_logisticos_por_ean(ean)
+
+@app.get("/dados-logisticos-vendavel/{produto_id}")
+def buscar_dados_logisticos_vendavel(produto_id: int):
+    return crud.buscar_dados_logisticos_vendavel(produto_id)
+
+@app.get("/embalagem-auxiliar/{produto_id}/{tipo_embalagem}")
+def buscar_embalagem_auxiliar(produto_id: int, tipo_embalagem: str):
+    return crud.buscar_embalagem_auxiliar(produto_id, tipo_embalagem)
+
+@app.get("/lastro-camada/{produto_id}")
+def buscar_lastro_camada(produto_id: int):
+    return crud.buscar_lastro_camada(produto_id)

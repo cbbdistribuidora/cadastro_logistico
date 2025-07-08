@@ -1,5 +1,6 @@
 from database import get_connection
 from schemas import EmbalagemAuxiliar
+from database import get_connection
 
 def dictfetchone(cur):
     row = cur.fetchone()
@@ -121,3 +122,58 @@ def salvar_embalagens_auxiliares(lista: list[EmbalagemAuxiliar]):
     conn.commit()
     cur.close()
     conn.close()
+
+def buscar_dados_logisticos_por_ean(ean):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM dados_logisticos
+        WHERE ean = %s
+    """, (ean,))
+    rows = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    resultados = [dict(zip(columns, row)) for row in rows]
+    cur.close()
+    conn.close()
+    return resultados
+
+def buscar_dados_logisticos_vendavel(produto_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM dados_logisticos
+        WHERE produto_id = %s AND tipo_embalagem = 'vendavel'
+    """, (produto_id,))
+    rows = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    resultados = [dict(zip(columns, row)) for row in rows]
+    cur.close()
+    conn.close()
+    return resultados
+
+def buscar_embalagem_auxiliar(produto_id, tipo_embalagem):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM embalagens_auxiliares
+        WHERE produto_id = %s AND tipo_embalagem = %s
+    """, (produto_id, tipo_embalagem))
+    row = cur.fetchone()
+    columns = [desc[0] for desc in cur.description]
+    result = dict(zip(columns, row)) if row else None
+    cur.close()
+    conn.close()
+    return result
+
+def buscar_lastro_camada(produto_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM lastro_camada
+        WHERE produto_id = %s
+    """, (produto_id,))
+    row = cur.fetchone()
+    result = dict(zip([desc[0] for desc in cur.description], row)) if row else {}
+    cur.close()
+    conn.close()
+    return result

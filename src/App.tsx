@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Step1 from "./components/Step1";
 import Step2 from "./components/Step2";
-import Step3 from "./components/Step3";
+import { Step3 } from "./components/Step3";
 import { Step4, Step5, Step6 } from "./components/StepsAuxiliares";
 import StepFinal from "./components/StepFinal";
 
@@ -26,7 +26,7 @@ const App: React.FC = () => {
     setDadosLogisticos([]);
     setEmbalagensAuxiliares([]);
     produtoReferenciaId([]);
-    setProdutoReferenciaId([]);
+    setProdutoReferenciaId(null);
   };
 
   return (
@@ -95,7 +95,7 @@ const App: React.FC = () => {
           dados={dadosLogisticos}
           embalagensAuxiliares={embalagensAuxiliares}
           reset={reset}
-          produtoReferenciaId={produtoReferenciaId} // <-- Adicionado
+          produtoReferenciaId={produtoReferenciaId} 
         />
       )}
     </div>

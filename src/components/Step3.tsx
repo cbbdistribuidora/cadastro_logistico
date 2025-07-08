@@ -146,7 +146,7 @@ const criarStepAuxiliar = (step: number, tipo_embalagem: string, titulo: string)
 };
 
 export default criarStepAuxiliar;
-
+export const Step3 = criarStepAuxiliar(3, "vendavel", "Embalagem Vendável");
 export const Step4 = criarStepAuxiliar(4, "auxiliar_1", "Embalagem Auxiliar 1");
 export const Step5 = criarStepAuxiliar(5, "auxiliar_2", "Embalagem Auxiliar 2");
 export const Step6 = criarStepAuxiliar(6, "auxiliar_3", "Embalagem Auxiliar 3");

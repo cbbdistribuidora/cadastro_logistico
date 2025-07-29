@@ -95,7 +95,7 @@ const App: React.FC = () => {
           dados={dadosLogisticos}
           embalagensAuxiliares={embalagensAuxiliares}
           reset={reset}
-          produtoReferenciaId={produtoReferenciaId} 
+          produtoReferenciaId={produtoReferenciaId}
         />
       )}
     </div>

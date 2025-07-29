@@ -5,6 +5,12 @@ const Step1 = ({ produto, setProduto, nextStep }: any) => {
   const [mensagem, setMensagem] = useState("");
   const [modoCadastro, setModoCadastro] = useState(false);
   const [cameraAtiva, setCameraAtiva] = useState(false);
+  const [contador, setContador] = useState({
+    total: 0,
+    com_dados_logisticos: 0,
+    percentual: 0
+  });
+
 
   useEffect(() => {
     if (cameraAtiva) {
@@ -29,6 +35,19 @@ const Step1 = ({ produto, setProduto, nextStep }: any) => {
       };
     }
   }, [cameraAtiva]);
+
+  useEffect(() => {
+    fetch("https://cadastro-logistico.onrender.com/contador-produtos")
+      .then(res => res.json())
+      .then(data => {
+        setContador({
+          total: data.total_produtos,
+          com_dados_logisticos: data.produtos_com_dados,
+          percentual: data.percentual_concluido
+        });
+      })
+      .catch(err => console.error("Erro ao buscar contagem de produtos", err));
+  }, []);
 
   const handleBuscar = async () => {
   const res = await fetch(`https://cadastro-logistico.onrender.com/verifica-produto-completo/${produto.ean_master}`);
@@ -109,6 +128,31 @@ const Step1 = ({ produto, setProduto, nextStep }: any) => {
       )}
 
       {mensagem && <p className="text-red-500">{mensagem}</p>}
+      <div className="bg-white shadow rounded-xl p-4 border border-gray-200">
+        <h3 className="text-lg font-semibold mb-2 text-gray-700">Progresso do Cadastro</h3>
+          
+        <div className="flex justify-between text-sm text-gray-600 mb-1">
+          <span>Total de Produtos</span>
+          <span>{contador.total}</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-600 mb-1">
+          <span>Com Dados Logísticos</span>
+          <span>{contador.com_dados_logisticos}</span>
+        </div>
+          
+        <div className="mt-3">
+          <div className="flex justify-between text-sm text-gray-500 mb-1">
+            <span>Concluído</span>
+            <span>{contador.percentual}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div
+              className="bg-green-500 h-3 rounded-full transition-all duration-500"
+              style={{ width: `${contador.percentual}%` }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

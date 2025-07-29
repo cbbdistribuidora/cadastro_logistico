@@ -21,16 +21,17 @@ const StepFinal = ({ produto, dados, embalagensAuxiliares, reset, produtoReferen
   const handleSubmit = async () => {
     try {
       const produtoId = produto.id;
-
+    
       // 1. Cadastrar dados logísticos
-      await fetch("https://cadastro-logistico.onrender.com/dados-logisticos", {
+      const res1 = await fetch("https://cadastro-logistico.onrender.com/dados-logisticos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dados),
       });
-
+      if (!res1.ok) throw new Error("Erro ao salvar dados logísticos");
+    
       // 2. Cadastrar lastro e camada
-      await fetch("https://cadastro-logistico.onrender.com/lastro-camada", {
+      const res2 = await fetch("https://cadastro-logistico.onrender.com/lastro-camada", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -39,15 +40,16 @@ const StepFinal = ({ produto, dados, embalagensAuxiliares, reset, produtoReferen
           camada: Number(camada),
         }),
       });
-
-      // 3. Cadastrar embalagens auxiliares (se houver)
+      if (!res2.ok) throw new Error("Erro ao salvar lastro e camada");
+    
+      // 3. Cadastrar embalagens auxiliares
       const auxiliares = Array.isArray(embalagensAuxiliares) ? embalagensAuxiliares : [];
       const auxiliaresPreenchidas = auxiliares.filter(
         (aux: any) => aux.embalagem && aux.qtd_embalagem
       );
-
+    
       if (auxiliaresPreenchidas.length > 0) {
-        await fetch("https://cadastro-logistico.onrender.com/embalagens-auxiliares", {
+        const res3 = await fetch("https://cadastro-logistico.onrender.com/embalagens-auxiliares", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
@@ -57,15 +59,17 @@ const StepFinal = ({ produto, dados, embalagensAuxiliares, reset, produtoReferen
             }))
           ),
         });
+        if (!res3.ok) throw new Error("Erro ao salvar embalagens auxiliares");
       }
-
+    
       alert("Cadastro concluído com sucesso!");
       reset();
-    } catch (error) {
-      alert("Erro ao salvar os dados.");
-      console.error(error);
+    } catch (error: any) {
+      console.error("Erro ao salvar os dados:", error);
+      alert(error.message || "Erro ao salvar os dados.");
     }
   };
+
 
   return (
     <div className="space-y-4">

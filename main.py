@@ -71,3 +71,8 @@ def buscar_embalagem_auxiliar(produto_id: int, tipo_embalagem: str):
 @app.get("/lastro-camada/{produto_id}")
 def buscar_lastro_camada(produto_id: int):
     return crud.buscar_lastro_camada(produto_id)
+
+
+@app.get("/contador-produtos")
+def contador_produtos():
+    return crud.contador_produtos()

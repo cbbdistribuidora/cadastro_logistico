@@ -1,6 +1,7 @@
 from database import get_connection
 from schemas import EmbalagemAuxiliar
 from database import get_connection
+from sqlalchemy import text
 
 def dictfetchone(cur):
     row = cur.fetchone()
@@ -177,3 +178,28 @@ def buscar_lastro_camada(produto_id):
     cur.close()
     conn.close()
     return result
+
+def contador_produtos():
+    query = """
+        SELECT
+            COUNT(DISTINCT p.ean_master) AS total_produtos,
+            COUNT(DISTINCT d.ean) AS produtos_com_dados,
+            ROUND(
+                (COUNT(DISTINCT d.ean) * 100.0 / NULLIF(COUNT(DISTINCT p.ean_master), 0)), 2
+            ) AS percentual_concluido
+        FROM produtos p
+        LEFT JOIN dados_logisticos d ON p.ean_master = d.ean;
+    """
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(query)
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    return {
+        "total_produtos": row[0],
+        "produtos_com_dados": row[1],
+        "percentual_concluido": row[2]
+    }
